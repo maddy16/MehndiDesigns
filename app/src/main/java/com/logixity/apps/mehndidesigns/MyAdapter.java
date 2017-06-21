@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.Target;
 
 import java.util.ArrayList;
 
@@ -32,11 +33,11 @@ public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i){
 
 @Override
 public void onBindViewHolder(MyAdapter.ViewHolder viewHolder,int i){
-    Glide.with(context)
-            .load("")
-            .placeholder(galleryList.get(i))
+    Glide.with(context).fromResource()
+            .load(galleryList.get(i)).override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
             .into(viewHolder.img);
         viewHolder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        viewHolder.img.setOnClickListener(new MainActivity.ImageZoomer(galleryList.get(i)));
 //        viewHolder.img.setImageResource((galleryList.get(i)));
         }
 
@@ -45,7 +46,7 @@ public int getItemCount(){
         return galleryList.size();
         }
 
-class ViewHolder extends RecyclerView.ViewHolder {
+public class ViewHolder extends RecyclerView.ViewHolder {
 
     private ImageView img;
 
