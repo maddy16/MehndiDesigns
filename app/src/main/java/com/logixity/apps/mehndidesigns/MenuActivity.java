@@ -1,12 +1,11 @@
 package com.logixity.apps.mehndidesigns;
 
-import android.Manifest;
+import android.*;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
-import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,224 +16,103 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.NativeExpressAdView;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.plus.Plus;
-import com.google.android.gms.plus.PlusOneButton;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
-
-    private static final int PLUS_ONE_REQUEST_CODE = 0;
+public class MenuActivity extends AppCompatActivity {
+    static MenuActivity instance;
     static int option = 0;
-    static MainActivity instance;
-    private static String APP_URL;
-    final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 110;
-
-    boolean isZoomed;
-    int zoomedImage = -1;
-    int adCount = 0;
-    RecyclerView recyclerView;
-    ImageView expandedImageView;
     private Animator mCurrentAnimator;
-    private PlusOneButton.OnPlusOneClickListener mPlusOneClickListener;
-    private AdView mAdView;
-    // The system "short" animation time duration, in milliseconds. This
-    // duration is ideal for subtle animations or animations that occur
-    // very frequently.
+    RecyclerView favRecycler;
+    RecyclerView menuRecycler;
     private int mShortAnimationDuration;
-    private PlusOneButton mPlusOneButton;
-    private GoogleApiClient mGoogleApiClient;
-
+    boolean isZoomed;
+    final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 110;
+    ImageView expandedImageView;
+    int zoomedImage = -1;
+    private AdView mAdView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        InterstitialAd fullScreenAd = App.instance.getFullScreenAd();
-        if (fullScreenAd.isLoaded()) {
-            fullScreenAd.show();
-        } else {
-            Log.d("MADDY", "Interstitial Not Loaded");
-            App.instance.requestNewInterstitial();
-//                    App.instance.countIntAd--;
-        }
-        mAdView = (AdView) findViewById(R.id.bannerAd);
+        setContentView(R.layout.activity_menu);
+        isZoomed = false;
+        instance = this;
+        mAdView = (AdView) findViewById(R.id.menuBannerAd);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
-        APP_URL = "https://play.google.com/store/apps/details?id=" + getPackageName();
-        isZoomed = false;
-        recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+        favRecycler = (RecyclerView) findViewById(R.id.favRecycler);
 
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false);
+        favRecycler.setLayoutManager(layoutManager);
+
+        FavAdapter adapter = new FavAdapter(getApplicationContext(), App.dataMap.get("upper"));
+
+        favRecycler.setAdapter(adapter);
+        menuRecycler = (RecyclerView) findViewById(R.id.catRecycler);
+        RecyclerView.LayoutManager menuLayoutManager = new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.VERTICAL,false);
+        menuRecycler.setLayoutManager(menuLayoutManager);
+        CategoryAdapter categoryAdapter = new CategoryAdapter(getApplicationContext());
+
+        menuRecycler.setAdapter(categoryAdapter);
         expandedImageView = (ImageView) findViewById(
-                R.id.zoomedImage);
-        instance = this;
-        //recyclerView.setHasFixedSize(true);
-
-        mPlusOneClickListener = new PlusOneButton.OnPlusOneClickListener() {
-            @Override
-            public void onPlusOneClick(Intent intent) {
-                if (intent != null)
-                    startActivityForResult(intent, PLUS_ONE_REQUEST_CODE);
-            }
-        };
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Plus.API)
-                .addScope(Plus.SCOPE_PLUS_LOGIN)
-                .useDefaultAccount()
-                .build();
+                R.id.zoomedImageF);
         mShortAnimationDuration = getResources().getInteger(
                 android.R.integer.config_shortAnimTime);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(),3);
-        recyclerView.setLayoutManager(layoutManager);
-        ArrayList<Integer> data = null;
-        ActionBar actionBar = getSupportActionBar();
-        switch (CategoryAdapter.selectedDesign){
-            case 0:
-                data = App.dataMap.get("arm");
-                if(actionBar!=null)
-                    actionBar.setTitle("Arm Mehndi Designs");
-                break;
-            case 1:
-                data = App.dataMap.get("upper");
-                if(actionBar!=null)
-                    actionBar.setTitle("Upper Hand Designs");
-                break;
-            case 2:
-                data = App.dataMap.get("palm");
-                if(actionBar!=null)
-                    actionBar.setTitle("Palm Mehndi Designs");
-                break;
-            case 3:
-                data = App.dataMap.get("foot");
-                if(actionBar!=null)
-                    actionBar.setTitle("Foot Mehndi Designs");
-                break;
-        }
-        MyAdapter adapter = new MyAdapter(getApplicationContext(), data);
-        recyclerView.setAdapter(adapter);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem item = menu.findItem(R.id.action_plus);
-        RelativeLayout view = (RelativeLayout) item.getActionView();
-        mPlusOneButton = (PlusOneButton) view.findViewById(R.id.plus_one_button);
-        mPlusOneButton.initialize(APP_URL, mPlusOneClickListener);
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    protected void onResume() {
-        if (mPlusOneButton != null)
-            mPlusOneButton.initialize(APP_URL, mPlusOneClickListener);
-        super.onResume();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mGoogleApiClient.disconnect();
-    }
-
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+    public static class ImageZoomer implements View.OnClickListener {
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_tab, menu);
-        menu.findItem(R.id.action_share).setVisible(isZoomed);
-        menu.findItem(R.id.action_rate).setVisible(!isZoomed);
-//        findViewById(R.id.action_share).setVisibility(View.INVISIBLE);
-        return true;
-    }
+        int imageId;
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_rate) {
-            rateApp();
-            return true;
-        }
-        if (id == R.id.action_share) {
-            shareImg();
-            return true;
+        public ImageZoomer(int imageId) {
+            this.imageId = imageId;
         }
 
-        return super.onOptionsItemSelected(item);
-    }
-
-    void rateApp() {
-        Uri uri = Uri.parse("market://details?id=" + getPackageName());
-        Intent myAppLinkToMarket = new Intent(Intent.ACTION_VIEW, uri);
-        try {
-            startActivity(myAppLinkToMarket);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, " unable to find market app", Toast.LENGTH_LONG).show();
+        @Override
+        public void onClick(View v) {
+            instance.zoomImageFromThumb(v, imageId);
         }
-
-
     }
-
     void zoomImageFromThumb(final View thumbView, int imageResId) {
         // If there's an animation in progress, cancel it
         // immediately and proceed with this one.
         if (mCurrentAnimator != null) {
             mCurrentAnimator.cancel();
         }
-        recyclerView.setVisibility(View.INVISIBLE);
+        favRecycler.setVisibility(View.INVISIBLE);
 
         // Load the high-resolution "zoomed-in" image.
 
         isZoomed = true;
-        invalidateOptionsMenu();
+//        invalidateOptionsMenu();
         expandedImageView.setImageResource(imageResId);
-        findViewById(R.id.dlBtn).setVisibility(View.VISIBLE);
+        findViewById(R.id.dlBtnF).setVisibility(View.VISIBLE);
+        menuRecycler.setVisibility(View.INVISIBLE);
         AdRequest request = null;
         if (App.instance.testingMode)
             request = new AdRequest.Builder().addTestDevice("55757F6B6D6116FAC42122EC92E5A58C").build();
         else
             request = new AdRequest.Builder().build();
-        final NativeExpressAdView adView = (NativeExpressAdView) findViewById(R.id.nativeAdView);
+        final NativeExpressAdView adView = (NativeExpressAdView) findViewById(R.id.nativeAdViewFV);
         adView.setVisibility(View.VISIBLE);
         adView.loadAd(request);
         zoomedImage = imageResId;
@@ -250,9 +128,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         // bounds, since that's the origin for the positioning animation
         // properties (X, Y).
         thumbView.getGlobalVisibleRect(startBounds);
-        findViewById(R.id.activity_main)
+        findViewById(R.id.activity_menu)
                 .getGlobalVisibleRect(finalBounds, globalOffset);
-        findViewById(R.id.activity_main).setBackgroundColor(Color.BLACK);
+        findViewById(R.id.activity_menu).setBackgroundColor(Color.BLACK);
         startBounds.offset(-globalOffset.x, -globalOffset.y);
         finalBounds.offset(-globalOffset.x, -globalOffset.y);
 
@@ -328,12 +206,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     mCurrentAnimator.cancel();
                 }
                 adView.setVisibility(View.GONE);
-                findViewById(R.id.dlBtn).setVisibility(View.GONE);
-                recyclerView.setVisibility(View.VISIBLE);
-                findViewById(R.id.activity_main).setBackgroundColor(Color.WHITE);
+                findViewById(R.id.dlBtnF).setVisibility(View.GONE);
+                favRecycler.setVisibility(View.VISIBLE);
+                menuRecycler.setVisibility(View.VISIBLE);
+                findViewById(R.id.activity_menu).setBackgroundColor(Color.WHITE);
                 isZoomed = false;
-                invalidateOptionsMenu();
-
                 // Animate the four positioning/sizing properties in parallel,
                 // back to their original values.
                 AnimatorSet set = new AnimatorSet();
@@ -373,23 +250,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         });
     }
-
-    void showFullScreenAd() {
-        if (adCount == 0) {
-            InterstitialAd fullScreenAd = App.instance.getFullScreenAd();
-            if (fullScreenAd.isLoaded()) {
-                fullScreenAd.show();
-            } else {
-                Log.d("MADDY", "Interstitial Not Loaded");
-                App.instance.requestNewInterstitial();
+    void showFullScreenAd(){
+        InterstitialAd fullScreenAd = App.instance.getFullScreenAd();
+        if (fullScreenAd!=null && fullScreenAd.isLoaded()) {
+            fullScreenAd.show();
+        } else {
+            Log.d("MADDY", "Interstitial Not Loaded");
+            App.instance.requestNewInterstitial();
 //                    App.instance.countIntAd--;
-            }
         }
-        adCount++;
-        if (adCount == 2)
-            adCount = 0;
     }
-
     @Override
     public void onBackPressed() {
         if (expandedImageView.getVisibility() == View.VISIBLE) {
@@ -399,21 +269,27 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
 
     }
-
-    public void shareImg() {
-        option = 1;
+    public void downloadImgClicked(View v) {
+        InterstitialAd fullScreenAd = App.instance.getFullScreenAd();
+        if (fullScreenAd.isLoaded()) {
+            fullScreenAd.show();
+        } else {
+            Log.d("MADDY", "Interstitial Not Loaded");
+            App.instance.requestNewInterstitial();
+//                    App.instance.countIntAd--;
+        }
+        option = 2;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkPermissions();
         } else {
             permissionAllowed();
         }
     }
-
     @TargetApi(23)
     public void checkPermissions() {
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+            requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
         } else {
             permissionAllowed();
@@ -428,7 +304,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
 
     }
-
     void downloadImage() {
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), zoomedImage);
         String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "mehndi_" + System.currentTimeMillis() + ".jpg";
@@ -477,24 +352,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         shareIntent.setType("image/jpeg");
         startActivity(Intent.createChooser(shareIntent, "Share with"));
     }
-
-    public void downloadImgClicked(View v) {
-        InterstitialAd fullScreenAd = App.instance.getFullScreenAd();
-        if (fullScreenAd.isLoaded()) {
-            fullScreenAd.show();
-        } else {
-            Log.d("MADDY", "Interstitial Not Loaded");
-            App.instance.requestNewInterstitial();
-//                    App.instance.countIntAd--;
-        }
-        option = 2;
+    public void shareImg() {
+        option = 1;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkPermissions();
         } else {
             permissionAllowed();
         }
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -507,20 +372,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 }
                 break;
             }
-        }
-    }
-
-    public static class ImageZoomer implements View.OnClickListener {
-
-        int imageId;
-
-        public ImageZoomer(int imageId) {
-            this.imageId = imageId;
-        }
-
-        @Override
-        public void onClick(View v) {
-            instance.zoomImageFromThumb(v, imageId);
         }
     }
 }

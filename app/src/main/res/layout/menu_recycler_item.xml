@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
+    android:background="#FFFFFF"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:paddingTop="8dp">
+
+    <ImageView
+        android:id="@+id/catImage"
+        android:layout_width="68dp"
+        android:contentDescription="Arm Designs"
+        android:layout_height="68dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+    <TextView
+        android:id="@+id/catText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mehndi Design Category"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:layout_toRightOf="@id/catImage"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_below="@id/catText"
+        android:id="@+id/catViewBtn"
+        android:textAllCaps="false"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:padding="13dp"
+        android:textSize="15sp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="8dp"
+        android:text="View Designs"
+        android:layout_alignParentRight="true"/>
+    <TextView
+        android:id="@+id/catDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mehndi Design Description"
+        android:textColor="#000000"
+        android:layout_marginTop="9dp"
+        android:textSize="14sp"
+        android:layout_below="@id/catText"
+        android:layout_toLeftOf="@id/catViewBtn"
+        android:layout_alignBaseline="@id/catViewBtn"
+        android:layout_toRightOf="@id/catImage"/>
+    <com.google.android.gms.ads.NativeExpressAdView
+        android:id="@+id/nativeAdViewCat"
+        android:layout_below="@id/catViewBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        ads:adSize="360x100"
+        ads:adUnitId="@string/native_ad_unit_id_menu"
+        >
+    </com.google.android.gms.ads.NativeExpressAdView>
+
+
+</RelativeLayout>
