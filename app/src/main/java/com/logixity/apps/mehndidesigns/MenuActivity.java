@@ -68,9 +68,9 @@ public class MenuActivity extends AppCompatActivity {
 
         favRecycler.setAdapter(adapter);
         menuRecycler = (RecyclerView) findViewById(R.id.catRecycler);
-        RecyclerView.LayoutManager menuLayoutManager = new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.VERTICAL,false);
+        RecyclerView.LayoutManager menuLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
         menuRecycler.setLayoutManager(menuLayoutManager);
-        CategoryAdapter categoryAdapter = new CategoryAdapter(getApplicationContext());
+        CategoryAdapter categoryAdapter = new CategoryAdapter(this);
 
         menuRecycler.setAdapter(categoryAdapter);
         expandedImageView = (ImageView) findViewById(

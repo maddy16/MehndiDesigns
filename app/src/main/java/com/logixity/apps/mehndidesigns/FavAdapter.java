@@ -36,10 +36,10 @@ public FavAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i){
 @Override
 public void onBindViewHolder(FavAdapter.ViewHolder viewHolder, int i){
     int pic = random.nextInt(galleryList.size());
-    Glide.with(context).fromResource()
+    Glide.with(context)
             .load(galleryList.get(pic)).thumbnail(
                     0.2f
-    ).fitCenter()
+    )
             .into(viewHolder.img);
         viewHolder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
         viewHolder.img.setOnClickListener(new MenuActivity.ImageZoomer(galleryList.get(pic)));

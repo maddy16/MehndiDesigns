@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.NativeExpressAdView;
-import com.google.android.gms.vision.text.Text;
+
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -81,7 +81,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
                 break;
 
         }
-        Glide.with(context).fromResource()
+        Glide.with(context)
                 .load(data.get(random.nextInt(data.size())))
                 .thumbnail(0.2f)
                 .into(viewHolder.img);

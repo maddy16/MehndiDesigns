@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 android.R.integer.config_shortAnimTime);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(),3);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setHasFixedSize(true);
         ArrayList<Integer> data = null;
         ActionBar actionBar = getSupportActionBar();
         switch (CategoryAdapter.selectedDesign){
@@ -137,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
         MyAdapter adapter = new MyAdapter(getApplicationContext(), data);
         recyclerView.setAdapter(adapter);
+
     }
 
     @Override
